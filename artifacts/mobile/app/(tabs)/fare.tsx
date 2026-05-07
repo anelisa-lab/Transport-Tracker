@@ -195,7 +195,7 @@ export default function FareScreen() {
                   {isStudent ? "Student" : "Adult"} Fare
                 </Text>
                 <Text style={[styles.resultFare, { color: colors.primary }]}>
-                  ${displayFare?.toFixed(2)}
+                  R{displayFare?.toFixed(2)}
                 </Text>
                 <Text style={[styles.resultRoute, { color: colors.mutedForeground }]}>
                   {zoneLabels[fromZone!]} → {zoneLabels[toZone!]}
@@ -204,7 +204,7 @@ export default function FareScreen() {
                   <View style={[styles.savingsBadge, { backgroundColor: colors.accent + "20", borderRadius: 8 }]}>
                     <Ionicons name="school-outline" size={14} color={colors.accent} />
                     <Text style={[styles.savingsText, { color: colors.accent }]}>
-                      You save ${(result.price - result.studentPrice).toFixed(2)} with student concession
+                      You save R{(result.price - result.studentPrice).toFixed(2)} with student concession
                     </Text>
                   </View>
                 )}
@@ -225,8 +225,8 @@ export default function FareScreen() {
               <Text style={[styles.fareTableCell, { color: colors.foreground, flex: 2 }]}>
                 Zone {rule.fromZone} → Zone {rule.toZone}
               </Text>
-              <Text style={[styles.fareTableCell, { color: colors.foreground }]}>${rule.price.toFixed(2)}</Text>
-              <Text style={[styles.fareTableCell, { color: colors.accent }]}>${rule.studentPrice.toFixed(2)}</Text>
+              <Text style={[styles.fareTableCell, { color: colors.foreground }]}>R{rule.price.toFixed(2)}</Text>
+              <Text style={[styles.fareTableCell, { color: colors.accent }]}>R{rule.studentPrice.toFixed(2)}</Text>
             </View>
           ))}
         </View>

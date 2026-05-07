@@ -70,7 +70,7 @@ function RouteCard({ route }: { route: Route }) {
         <View style={styles.timingItem}>
           <Ionicons name="card-outline" size={14} color={colors.mutedForeground} />
           <Text style={[styles.timingLabel, { color: colors.mutedForeground }]}>Fare</Text>
-          <Text style={[styles.timingValue, { color: colors.primary }]}>${route.fare.toFixed(2)}</Text>
+          <Text style={[styles.timingValue, { color: colors.primary }]}>R{route.fare.toFixed(2)}</Text>
         </View>
       </View>
 
