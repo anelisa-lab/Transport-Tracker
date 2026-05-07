@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import StopsMap from "@/components/StopsMap";
 import { useColors } from "@/hooks/useColors";
 import { Stop, sampleStops } from "@/lib/sampleData";
 
@@ -40,9 +41,20 @@ function FacilityChip({ label }: { label: string }) {
     "Bike rack": "bicycle-outline",
   };
   return (
-    <View style={[styles.facilityChip, { backgroundColor: colors.muted, borderRadius: 6, borderColor: colors.border }]}>
-      <Ionicons name={icons[label] ?? "checkmark-circle-outline"} size={12} color={colors.mutedForeground} />
-      <Text style={[styles.facilityText, { color: colors.mutedForeground }]}>{label}</Text>
+    <View
+      style={[
+        styles.facilityChip,
+        { backgroundColor: colors.muted, borderRadius: 6, borderColor: colors.border },
+      ]}
+    >
+      <Ionicons
+        name={icons[label] ?? "checkmark-circle-outline"}
+        size={12}
+        color={colors.mutedForeground}
+      />
+      <Text style={[styles.facilityText, { color: colors.mutedForeground }]}>
+        {label}
+      </Text>
     </View>
   );
 }
@@ -50,9 +62,16 @@ function FacilityChip({ label }: { label: string }) {
 function StopCard({ stop }: { stop: Stop }) {
   const colors = useColors();
   return (
-    <View style={[styles.stopCard, { backgroundColor: colors.card, borderRadius: colors.radius, borderColor: colors.border }]}>
+    <View
+      style={[
+        styles.stopCard,
+        { backgroundColor: colors.card, borderRadius: colors.radius, borderColor: colors.border },
+      ]}
+    >
       <View style={styles.stopHeader}>
-        <View style={[styles.stopIconBadge, { backgroundColor: colors.primary + "15", borderRadius: 10 }]}>
+        <View
+          style={[styles.stopIconBadge, { backgroundColor: colors.primary + "15", borderRadius: 10 }]}
+        >
           <Ionicons name="location" size={20} color={colors.primary} />
         </View>
         <View style={styles.stopInfo}>
@@ -68,7 +87,10 @@ function StopCard({ stop }: { stop: Stop }) {
         <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>Routes</Text>
         <View style={styles.routeTags}>
           {stop.routes.map((route) => (
-            <View key={route} style={[styles.routeTag, { backgroundColor: colors.secondary, borderRadius: 6 }]}>
+            <View
+              key={route}
+              style={[styles.routeTag, { backgroundColor: colors.secondary, borderRadius: 6 }]}
+            >
               <Text style={[styles.routeTagText, { color: colors.primary }]}>{route}</Text>
             </View>
           ))}
@@ -92,6 +114,7 @@ export default function StopsScreen() {
   const insets = useSafeAreaInsets();
   const [search, setSearch] = useState("");
   const [selectedZone, setSelectedZone] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"list" | "map">("list");
 
   const filtered = sampleStops.filter((s) => {
     const matchSearch =
@@ -105,10 +128,58 @@ export default function StopsScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { paddingTop: topPad + 12, backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-        <Text style={[styles.title, { color: colors.foreground }]}>Stops</Text>
+      <View
+        style={[
+          styles.header,
+          { paddingTop: topPad + 12, backgroundColor: colors.card, borderBottomColor: colors.border },
+        ]}
+      >
+        <View style={styles.titleRow}>
+          <Text style={[styles.title, { color: colors.foreground }]}>Stops</Text>
 
-        <View style={[styles.searchBar, { backgroundColor: colors.muted, borderRadius: colors.radius - 4, borderColor: colors.border }]}>
+          <View
+            style={[
+              styles.viewToggle,
+              { backgroundColor: colors.muted, borderRadius: colors.radius - 4, borderColor: colors.border },
+            ]}
+          >
+            {(["list", "map"] as const).map((mode) => (
+              <Pressable
+                key={mode}
+                style={({ pressed }) => [
+                  styles.toggleBtn,
+                  {
+                    backgroundColor: viewMode === mode ? colors.primary : "transparent",
+                    borderRadius: colors.radius - 6,
+                    opacity: pressed ? 0.8 : 1,
+                  },
+                ]}
+                onPress={() => setViewMode(mode)}
+              >
+                <Ionicons
+                  name={mode === "list" ? "list-outline" : "map-outline"}
+                  size={16}
+                  color={viewMode === mode ? "#FFFFFF" : colors.mutedForeground}
+                />
+                <Text
+                  style={[
+                    styles.toggleBtnText,
+                    { color: viewMode === mode ? "#FFFFFF" : colors.mutedForeground },
+                  ]}
+                >
+                  {mode === "list" ? "List" : "Map"}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        <View
+          style={[
+            styles.searchBar,
+            { backgroundColor: colors.muted, borderRadius: colors.radius - 4, borderColor: colors.border },
+          ]}
+        >
           <Ionicons name="search-outline" size={18} color={colors.mutedForeground} />
           <TextInput
             style={[styles.searchInput, { color: colors.foreground }]}
@@ -128,11 +199,17 @@ export default function StopsScreen() {
           <Pressable
             style={({ pressed }) => [
               styles.zoneFilter,
-              { borderRadius: colors.radius - 6, backgroundColor: !selectedZone ? colors.primary : colors.muted, opacity: pressed ? 0.8 : 1 },
+              {
+                borderRadius: colors.radius - 6,
+                backgroundColor: !selectedZone ? colors.primary : colors.muted,
+                opacity: pressed ? 0.8 : 1,
+              },
             ]}
             onPress={() => setSelectedZone(null)}
           >
-            <Text style={[styles.zoneFilterText, { color: !selectedZone ? "#FFFFFF" : colors.mutedForeground }]}>All</Text>
+            <Text style={[styles.zoneFilterText, { color: !selectedZone ? "#FFFFFF" : colors.mutedForeground }]}>
+              All
+            </Text>
           </Pressable>
           {["A", "B", "C", "D"].map((zone) => (
             <Pressable
@@ -147,7 +224,12 @@ export default function StopsScreen() {
               ]}
               onPress={() => setSelectedZone(selectedZone === zone ? null : zone)}
             >
-              <Text style={[styles.zoneFilterText, { color: selectedZone === zone ? "#FFFFFF" : colors.mutedForeground }]}>
+              <Text
+                style={[
+                  styles.zoneFilterText,
+                  { color: selectedZone === zone ? "#FFFFFF" : colors.mutedForeground },
+                ]}
+              >
                 Zone {zone}
               </Text>
             </Pressable>
@@ -155,34 +237,51 @@ export default function StopsScreen() {
         </View>
       </View>
 
-      <FlatList
-        data={filtered}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <StopCard stop={item} />}
-        contentContainerStyle={[
-          styles.list,
-          { paddingBottom: Platform.OS === "web" ? 34 : 24 },
-        ]}
-        scrollEnabled={!!filtered.length}
-        ListEmptyComponent={
-          <View style={styles.empty}>
-            <Ionicons name="location-outline" size={48} color={colors.mutedForeground} />
-            <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>No stops found</Text>
-          </View>
-        }
-      />
+      {viewMode === "map" ? (
+        <StopsMap stops={filtered} />
+      ) : (
+        <FlatList
+          data={filtered}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <StopCard stop={item} />}
+          contentContainerStyle={[
+            styles.list,
+            { paddingBottom: Platform.OS === "web" ? 34 : 24 },
+          ]}
+          scrollEnabled={!!filtered.length}
+          ListEmptyComponent={
+            <View style={styles.empty}>
+              <Ionicons name="location-outline" size={48} color={colors.mutedForeground} />
+              <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
+                No stops found
+              </Text>
+            </View>
+          }
+        />
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: {
-    paddingHorizontal: 20,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
+  header: { paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1 },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
   },
-  title: { fontSize: 24, fontFamily: "Inter_700Bold", letterSpacing: -0.5, marginBottom: 12 },
+  title: { fontSize: 24, fontFamily: "Inter_700Bold", letterSpacing: -0.5 },
+  viewToggle: { flexDirection: "row", padding: 3, borderWidth: 1 },
+  toggleBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  toggleBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold" },
   searchBar: {
     flexDirection: "row",
     alignItems: "center",

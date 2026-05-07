@@ -16,6 +16,8 @@ export interface Stop {
   routes: string[];
   zone: string;
   facilities: string[];
+  latitude: number;
+  longitude: number;
 }
 
 export interface Alert {
@@ -100,6 +102,8 @@ export const sampleStops: Stop[] = [
     routes: ["Route 7", "Route 12", "Route 23"],
     zone: "A",
     facilities: ["Shelter", "Bench", "Real-time display", "Ticket machine"],
+    latitude: -26.2044,
+    longitude: 28.0431,
   },
   {
     id: "s2",
@@ -107,6 +111,8 @@ export const sampleStops: Stop[] = [
     routes: ["Route 5", "Route 12", "Route 9"],
     zone: "A",
     facilities: ["Shelter", "Bench", "Bike rack"],
+    latitude: -26.1929,
+    longitude: 28.0305,
   },
   {
     id: "s3",
@@ -114,6 +120,8 @@ export const sampleStops: Stop[] = [
     routes: ["Route 7", "Route 11", "Route 15"],
     zone: "B",
     facilities: ["Shelter", "Bench", "Ticket machine", "Real-time display"],
+    latitude: -26.1075,
+    longitude: 28.0567,
   },
   {
     id: "s4",
@@ -121,6 +129,8 @@ export const sampleStops: Stop[] = [
     routes: ["Route 12", "Route 3", "Route 6"],
     zone: "C",
     facilities: ["Shelter", "Bench"],
+    latitude: -26.2674,
+    longitude: 27.8585,
   },
   {
     id: "s5",
@@ -128,6 +138,8 @@ export const sampleStops: Stop[] = [
     routes: ["Route 7", "Route 4"],
     zone: "B",
     facilities: ["Shelter", "Real-time display"],
+    latitude: -26.1465,
+    longitude: 28.0436,
   },
   {
     id: "s6",
@@ -135,6 +147,8 @@ export const sampleStops: Stop[] = [
     routes: ["Route 23", "Route 19"],
     zone: "D",
     facilities: ["Shelter", "Bench", "Ticket machine"],
+    latitude: -25.7463,
+    longitude: 28.2288,
   },
   {
     id: "s7",
@@ -142,6 +156,8 @@ export const sampleStops: Stop[] = [
     routes: ["Route 7", "Route 5", "Route 8"],
     zone: "A",
     facilities: ["Shelter", "Bike rack"],
+    latitude: -26.1929,
+    longitude: 28.0393,
   },
   {
     id: "s8",
@@ -149,6 +165,8 @@ export const sampleStops: Stop[] = [
     routes: ["Route 23", "Route 16"],
     zone: "C",
     facilities: ["Shelter"],
+    latitude: -25.9972,
+    longitude: 28.1264,
   },
 ];
 
