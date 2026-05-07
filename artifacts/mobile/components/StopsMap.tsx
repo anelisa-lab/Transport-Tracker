@@ -3,16 +3,16 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { useColors } from "@/hooks/useColors";
-import { Stop } from "@/lib/sampleData";
+import { Route, Stop } from "@/lib/sampleData";
 
-export default function StopsMap(_props: { stops: Stop[] }) {
+export default function StopsMap(_props: { stops: Stop[]; routes: Route[] }) {
   const colors = useColors();
   return (
     <View style={[styles.container, { backgroundColor: colors.muted }]}>
       <Ionicons name="map-outline" size={48} color={colors.mutedForeground} />
       <Text style={[styles.title, { color: colors.foreground }]}>Map view</Text>
       <Text style={[styles.sub, { color: colors.mutedForeground }]}>
-        Available on iOS and Android via Expo Go
+        Live vehicle tracking available on iOS and Android via Expo Go
       </Text>
     </View>
   );

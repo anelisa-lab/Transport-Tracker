@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/context/AuthContext";
 import { useColors } from "@/hooks/useColors";
 import { useCountdown, useNextRoute } from "@/hooks/useCountdown";
+import { useVehicleSimulation, VehicleState } from "@/hooks/useVehicleSimulation";
 import { Route, sampleAlerts, sampleRoutes } from "@/lib/sampleData";
 
 function getGreeting() {
@@ -261,14 +262,62 @@ function UpcomingRow({ route }: { route: Route }) {
   );
 }
 
+function LiveVehicleRow({ v }: { v: VehicleState }) {
+  const colors = useColors();
+  return (
+    <Pressable
+      style={({ pressed }) => [
+        styles.vehicleRow,
+        {
+          backgroundColor: colors.card,
+          borderRadius: colors.radius - 2,
+          borderColor: v.color + "40",
+          opacity: pressed ? 0.9 : 1,
+        },
+      ]}
+      onPress={() => router.push("/(tabs)/stops")}
+    >
+      <View style={[styles.vehicleDot, { backgroundColor: v.color }]}>
+        <Ionicons name="bus" size={11} color="#FFF" />
+      </View>
+      <View style={styles.vehicleInfo}>
+        <Text style={[styles.vehicleName, { color: colors.foreground }]} numberOfLines={1}>
+          {v.shortName}
+        </Text>
+        <View style={[styles.vehicleTrack, { backgroundColor: colors.muted }]}>
+          <View
+            style={[
+              styles.vehicleFill,
+              {
+                width: `${Math.round(v.progress * 100)}%` as `${number}%`,
+                backgroundColor: v.color,
+              },
+            ]}
+          />
+        </View>
+      </View>
+      <View style={styles.vehicleEtaBox}>
+        <Text style={[styles.vehicleEta, { color: v.color }]}>{v.etaMinutes}m</Text>
+        <Text style={[styles.vehicleEtaLabel, { color: colors.mutedForeground }]}>to terminal</Text>
+      </View>
+      {v.status === "delayed" && (
+        <View style={[styles.delayedBadge, { backgroundColor: "#D97706" + "20" }]}>
+          <Text style={[styles.delayedText, { color: "#D97706" }]}>Delayed</Text>
+        </View>
+      )}
+    </Pressable>
+  );
+}
+
 export default function HomeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { user, signOut } = useAuth();
 
-  const firstName = user?.displayName?.split(" ")[0] ?? "Student";
+  const firstName = user?.displayName?.split(" ")[0] ?? "Passenger";
   const activeAlerts = sampleAlerts.filter((a) => a.isActive);
   const nextRoute = useNextRoute(sampleRoutes);
+  const vehicles = useVehicleSimulation(sampleRoutes);
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
 
@@ -327,7 +376,7 @@ export default function HomeScreen() {
           <StatCard
             icon="location-outline"
             label="Stops"
-            value="8"
+            value="9"
             color="#34D399"
           />
           <StatCard
@@ -364,6 +413,23 @@ export default function HomeScreen() {
         <View style={styles.upcomingList}>
           {sortedRoutes.map((route) => (
             <UpcomingRow key={route.id} route={route} />
+          ))}
+        </View>
+      </View>
+
+      {/* Live Vehicles */}
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+            Live Vehicles
+          </Text>
+          <Pressable onPress={() => router.push("/(tabs)/stops")}>
+            <Text style={[styles.seeAll, { color: colors.primary }]}>View map</Text>
+          </Pressable>
+        </View>
+        <View style={styles.upcomingList}>
+          {vehicles.map((v) => (
+            <LiveVehicleRow key={v.routeId} v={v} />
           ))}
         </View>
       </View>
@@ -594,6 +660,33 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   upcomingTime: { fontSize: 11, fontFamily: "Inter_400Regular" },
+
+  // Live vehicles
+  vehicleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    gap: 10,
+    borderWidth: 1.5,
+  },
+  vehicleDot: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  vehicleInfo: { flex: 1, gap: 5 },
+  vehicleName: { fontSize: 13, fontFamily: "Inter_600SemiBold" },
+  vehicleTrack: { height: 5, borderRadius: 3, overflow: "hidden" },
+  vehicleFill: { height: "100%", borderRadius: 3 },
+  vehicleEtaBox: { alignItems: "flex-end" },
+  vehicleEta: { fontSize: 16, fontFamily: "Inter_700Bold", letterSpacing: -0.5 },
+  vehicleEtaLabel: { fontSize: 10, fontFamily: "Inter_400Regular" },
+  delayedBadge: { paddingHorizontal: 7, paddingVertical: 3, borderRadius: 5 },
+  delayedText: { fontSize: 10, fontFamily: "Inter_600SemiBold" },
 
   // Alerts
   alertCard: { padding: 14, marginBottom: 10, borderWidth: 1 },

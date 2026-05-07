@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import StopsMap from "@/components/StopsMap";
 import { useColors } from "@/hooks/useColors";
-import { Stop, sampleStops } from "@/lib/sampleData";
+import { Stop, sampleRoutes, sampleStops } from "@/lib/sampleData";
 
 const ZONE_COLORS: Record<string, string> = {
   A: "#2563EB",
@@ -238,7 +238,7 @@ export default function StopsScreen() {
       </View>
 
       {viewMode === "map" ? (
-        <StopsMap stops={filtered} />
+        <StopsMap stops={filtered} routes={sampleRoutes} />
       ) : (
         <FlatList
           data={filtered}
