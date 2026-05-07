@@ -14,7 +14,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AuthContext";
 import { useColors } from "@/hooks/useColors";
-import { sampleAlerts, sampleRoutes } from "@/lib/sampleData";
+import { useCountdown, useNextRoute } from "@/hooks/useCountdown";
+import { Route, sampleAlerts, sampleRoutes } from "@/lib/sampleData";
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -33,21 +34,30 @@ interface StatCardProps {
 function StatCard({ icon, label, value, color }: StatCardProps) {
   const colors = useColors();
   return (
-    <View style={[styles.statCard, { backgroundColor: colors.card, borderRadius: colors.radius, borderColor: colors.border }]}>
+    <View
+      style={[
+        styles.statCard,
+        {
+          backgroundColor: colors.card,
+          borderRadius: colors.radius,
+          borderColor: colors.border,
+        },
+      ]}
+    >
       <View style={[styles.statIconBadge, { backgroundColor: color + "20" }]}>
         <Ionicons name={icon} size={20} color={color} />
       </View>
-      <Text style={[styles.statValue, { color: colors.foreground }]}>{value}</Text>
-      <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{label}</Text>
+      <Text style={[styles.statValue, { color: colors.foreground }]}>
+        {value}
+      </Text>
+      <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>
+        {label}
+      </Text>
     </View>
   );
 }
 
-interface AlertBadgeProps {
-  type: "info" | "warning" | "critical";
-}
-
-function AlertBadge({ type }: AlertBadgeProps) {
+function AlertBadge({ type }: { type: "info" | "warning" | "critical" }) {
   const colors = useColors();
   const config = {
     info: { color: colors.info, label: "Info" },
@@ -55,9 +65,199 @@ function AlertBadge({ type }: AlertBadgeProps) {
     critical: { color: colors.destructive, label: "Critical" },
   }[type];
   return (
-    <View style={[styles.alertTypeBadge, { backgroundColor: config.color + "20", borderRadius: 6 }]}>
-      <Text style={[styles.alertTypeBadgeText, { color: config.color }]}>{config.label}</Text>
+    <View
+      style={[
+        styles.alertTypeBadge,
+        { backgroundColor: config.color + "20", borderRadius: 6 },
+      ]}
+    >
+      <Text style={[styles.alertTypeBadgeText, { color: config.color }]}>
+        {config.label}
+      </Text>
     </View>
+  );
+}
+
+function StatusBadge({ status }: { status: Route["status"] }) {
+  const colors = useColors();
+  const cfg = {
+    "on-time": { color: colors.accent, label: "On Time" },
+    delayed: { color: colors.warning, label: "Delayed" },
+    cancelled: { color: colors.destructive, label: "Cancelled" },
+  }[status];
+  return (
+    <View
+      style={[
+        styles.statusBadge,
+        { backgroundColor: cfg.color + "20", borderRadius: 6 },
+      ]}
+    >
+      <Text style={[styles.statusText, { color: cfg.color }]}>{cfg.label}</Text>
+    </View>
+  );
+}
+
+function NextDepartureCard({ route }: { route: Route }) {
+  const colors = useColors();
+  const { label, isImminent, isPast, hours, minutes, seconds } = useCountdown(
+    route.departureTime
+  );
+
+  const ringColor = isPast
+    ? colors.mutedForeground
+    : isImminent
+      ? colors.destructive
+      : colors.primary;
+
+  return (
+    <Pressable
+      style={({ pressed }) => [
+        styles.nextCard,
+        {
+          backgroundColor: colors.card,
+          borderRadius: colors.radius,
+          borderColor: isImminent ? colors.destructive + "60" : colors.border,
+          opacity: pressed ? 0.92 : 1,
+        },
+      ]}
+      onPress={() => router.push("/(tabs)/routes")}
+    >
+      {/* Countdown ring */}
+      <View
+        style={[
+          styles.countdownRing,
+          {
+            borderColor: ringColor,
+            backgroundColor: ringColor + "12",
+          },
+        ]}
+      >
+        {isImminent && !isPast ? (
+          <>
+            <Text style={[styles.countdownSeconds, { color: ringColor }]}>
+              {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+            </Text>
+            <Text style={[styles.countdownUnit, { color: ringColor }]}>left</Text>
+          </>
+        ) : hours > 0 ? (
+          <>
+            <Text style={[styles.countdownHours, { color: ringColor }]}>
+              {hours}h
+            </Text>
+            <Text style={[styles.countdownUnit, { color: ringColor }]}>
+              {minutes}m
+            </Text>
+          </>
+        ) : (
+          <>
+            <Text style={[styles.countdownHours, { color: ringColor }]}>
+              {minutes}m
+            </Text>
+            <Text style={[styles.countdownUnit, { color: ringColor }]}>
+              {String(seconds).padStart(2, "0")}s
+            </Text>
+          </>
+        )}
+      </View>
+
+      <View style={styles.nextCardInfo}>
+        <Text style={[styles.nextCardName, { color: colors.foreground }]}>
+          {route.name}
+        </Text>
+        <Text style={[styles.nextCardRoute, { color: colors.mutedForeground }]}>
+          {route.from} → {route.to}
+        </Text>
+        <View style={styles.nextCardMeta}>
+          <Ionicons
+            name="time-outline"
+            size={13}
+            color={colors.mutedForeground}
+          />
+          <Text style={[styles.nextCardTime, { color: colors.primary }]}>
+            {route.departureTime} → {route.arrivalTime}
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.nextCardRight}>
+        <StatusBadge status={route.status} />
+        <View style={styles.nextCardArrow}>
+          <Ionicons
+            name="chevron-forward"
+            size={16}
+            color={colors.mutedForeground}
+          />
+        </View>
+      </View>
+    </Pressable>
+  );
+}
+
+function UpcomingRow({ route }: { route: Route }) {
+  const colors = useColors();
+  const { label, isImminent, isPast } = useCountdown(route.departureTime);
+
+  const countdownColor = isPast
+    ? colors.mutedForeground
+    : isImminent
+      ? colors.destructive
+      : colors.primary;
+
+  return (
+    <Pressable
+      style={({ pressed }) => [
+        styles.upcomingRow,
+        {
+          backgroundColor: colors.card,
+          borderRadius: colors.radius - 2,
+          borderColor: colors.border,
+          opacity: pressed ? 0.9 : 1,
+        },
+      ]}
+      onPress={() => router.push("/(tabs)/routes")}
+    >
+      <View
+        style={[
+          styles.upcomingDot,
+          {
+            backgroundColor: isImminent
+              ? colors.destructive
+              : isPast
+                ? colors.mutedForeground
+                : colors.primary,
+          },
+        ]}
+      />
+      <View style={styles.upcomingInfo}>
+        <Text
+          style={[styles.upcomingName, { color: colors.foreground }]}
+          numberOfLines={1}
+        >
+          {route.name.split("—")[1]?.trim() ?? route.name}
+        </Text>
+        <Text
+          style={[styles.upcomingRoute, { color: colors.mutedForeground }]}
+          numberOfLines={1}
+        >
+          {route.from} → {route.to}
+        </Text>
+      </View>
+      <View style={styles.upcomingRight}>
+        <Text
+          style={[
+            styles.upcomingCountdown,
+            { color: countdownColor },
+          ]}
+        >
+          {label}
+        </Text>
+        <Text
+          style={[styles.upcomingTime, { color: colors.mutedForeground }]}
+        >
+          {route.departureTime}
+        </Text>
+      </View>
+    </Pressable>
   );
 }
 
@@ -68,14 +268,29 @@ export default function HomeScreen() {
 
   const firstName = user?.displayName?.split(" ")[0] ?? "Student";
   const activeAlerts = sampleAlerts.filter((a) => a.isActive);
-  const nextRoute = sampleRoutes[0];
+  const nextRoute = useNextRoute(sampleRoutes);
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
+
+  const sortedRoutes = [...sampleRoutes].sort((a, b) => {
+    const toSecs = (t: string) => {
+      const [h, m] = t.split(":").map(Number);
+      const now = new Date();
+      const target = new Date(now);
+      target.setHours(h, m, 0, 0);
+      if (target <= now) target.setDate(target.getDate() + 1);
+      return target.getTime() - now.getTime();
+    };
+    return toSecs(a.departureTime) - toSecs(b.departureTime);
+  });
 
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={[styles.content, { paddingBottom: Platform.OS === "web" ? 34 : 24 }]}
+      contentContainerStyle={[
+        styles.content,
+        { paddingBottom: Platform.OS === "web" ? 34 : 24 },
+      ]}
       showsVerticalScrollIndicator={false}
     >
       <LinearGradient
@@ -88,89 +303,165 @@ export default function HomeScreen() {
             <Text style={styles.userName}>{firstName}</Text>
           </View>
           <Pressable
-            style={({ pressed }) => [styles.signOutBtn, { opacity: pressed ? 0.7 : 1 }]}
+            style={({ pressed }) => [
+              styles.signOutBtn,
+              { opacity: pressed ? 0.7 : 1 },
+            ]}
             onPress={signOut}
           >
-            <Ionicons name="log-out-outline" size={22} color="rgba(255,255,255,0.85)" />
+            <Ionicons
+              name="log-out-outline"
+              size={22}
+              color="rgba(255,255,255,0.85)"
+            />
           </Pressable>
         </View>
 
         <View style={styles.statsRow}>
-          <StatCard icon="bus-outline" label="Routes" value={String(sampleRoutes.length)} color="#60A5FA" />
-          <StatCard icon="location-outline" label="Stops" value="6" color="#34D399" />
-          <StatCard icon="warning-outline" label="Alerts" value={String(activeAlerts.length)} color="#FBBF24" />
+          <StatCard
+            icon="bus-outline"
+            label="Routes"
+            value={String(sampleRoutes.length)}
+            color="#60A5FA"
+          />
+          <StatCard
+            icon="location-outline"
+            label="Stops"
+            value="8"
+            color="#34D399"
+          />
+          <StatCard
+            icon="warning-outline"
+            label="Alerts"
+            value={String(activeAlerts.length)}
+            color="#FBBF24"
+          />
         </View>
       </LinearGradient>
 
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Next Departure</Text>
-        <Pressable
-          style={({ pressed }) => [
-            styles.nextRouteCard,
-            { backgroundColor: colors.card, borderRadius: colors.radius, borderColor: colors.border, opacity: pressed ? 0.9 : 1 },
-          ]}
-          onPress={() => router.push("/(tabs)/routes")}
-        >
-          <View style={[styles.routeBadge, { backgroundColor: colors.primary + "15", borderRadius: 8 }]}>
-            <Ionicons name="navigate" size={22} color={colors.primary} />
-          </View>
-          <View style={styles.routeInfo}>
-            <Text style={[styles.routeName, { color: colors.foreground }]}>{nextRoute.name}</Text>
-            <Text style={[styles.routeDetail, { color: colors.mutedForeground }]}>
-              {nextRoute.from} → {nextRoute.to}
-            </Text>
-            <Text style={[styles.routeTime, { color: colors.primary }]}>
-              Departs {nextRoute.departureTime}
-            </Text>
-          </View>
-          <View style={[styles.onTimeBadge, { backgroundColor: colors.accent + "20", borderRadius: 6 }]}>
-            <Text style={[styles.onTimeText, { color: colors.accent }]}>On Time</Text>
-          </View>
-        </Pressable>
-      </View>
+      {/* Next departure with live countdown */}
+      {nextRoute && (
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+            Next Departure
+          </Text>
+          <NextDepartureCard route={nextRoute} />
+        </View>
+      )}
 
+      {/* All upcoming routes */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Recent Alerts</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+            All Departures
+          </Text>
+          <Pressable onPress={() => router.push("/(tabs)/routes")}>
+            <Text style={[styles.seeAll, { color: colors.primary }]}>
+              See all
+            </Text>
+          </Pressable>
+        </View>
+        <View style={styles.upcomingList}>
+          {sortedRoutes.map((route) => (
+            <UpcomingRow key={route.id} route={route} />
+          ))}
+        </View>
+      </View>
+
+      {/* Alerts */}
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+            Recent Alerts
+          </Text>
           <Pressable onPress={() => router.push("/(tabs)/alerts")}>
-            <Text style={[styles.seeAll, { color: colors.primary }]}>See all</Text>
+            <Text style={[styles.seeAll, { color: colors.primary }]}>
+              See all
+            </Text>
           </Pressable>
         </View>
 
-        {activeAlerts.slice(0, 3).map((alert) => (
+        {activeAlerts.slice(0, 2).map((alert) => (
           <View
             key={alert.id}
-            style={[styles.alertCard, { backgroundColor: colors.card, borderRadius: colors.radius, borderColor: colors.border }]}
+            style={[
+              styles.alertCard,
+              {
+                backgroundColor: colors.card,
+                borderRadius: colors.radius,
+                borderColor: colors.border,
+              },
+            ]}
           >
             <AlertBadge type={alert.type} />
-            <Text style={[styles.alertTitle, { color: colors.foreground }]}>{alert.title}</Text>
-            <Text style={[styles.alertMessage, { color: colors.mutedForeground }]} numberOfLines={2}>
+            <Text style={[styles.alertTitle, { color: colors.foreground }]}>
+              {alert.title}
+            </Text>
+            <Text
+              style={[styles.alertMessage, { color: colors.mutedForeground }]}
+              numberOfLines={2}
+            >
               {alert.message}
             </Text>
           </View>
         ))}
       </View>
 
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Quick Actions</Text>
+      {/* Quick Actions */}
+      <View style={[styles.section, styles.lastSection]}>
+        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+          Quick Actions
+        </Text>
         <View style={styles.quickActions}>
           {[
-            { icon: "map-outline" as const, label: "Plan Route", route: "/(tabs)/routes" as const },
-            { icon: "location-outline" as const, label: "Find Stop", route: "/(tabs)/stops" as const },
-            { icon: "card-outline" as const, label: "Fare Calc", route: "/(tabs)/fare" as const },
+            {
+              icon: "map-outline" as const,
+              label: "Plan Route",
+              route: "/(tabs)/routes" as const,
+            },
+            {
+              icon: "location-outline" as const,
+              label: "Find Stop",
+              route: "/(tabs)/stops" as const,
+            },
+            {
+              icon: "card-outline" as const,
+              label: "Fare Calc",
+              route: "/(tabs)/fare" as const,
+            },
           ].map((action) => (
             <Pressable
               key={action.label}
               style={({ pressed }) => [
                 styles.quickAction,
-                { backgroundColor: colors.card, borderRadius: colors.radius, borderColor: colors.border, opacity: pressed ? 0.8 : 1 },
+                {
+                  backgroundColor: colors.card,
+                  borderRadius: colors.radius,
+                  borderColor: colors.border,
+                  opacity: pressed ? 0.8 : 1,
+                },
               ]}
               onPress={() => router.push(action.route)}
             >
-              <View style={[styles.quickActionIcon, { backgroundColor: colors.primary + "15", borderRadius: colors.radius - 4 }]}>
+              <View
+                style={[
+                  styles.quickActionIcon,
+                  {
+                    backgroundColor: colors.primary + "15",
+                    borderRadius: colors.radius - 4,
+                  },
+                ]}
+              >
                 <Ionicons name={action.icon} size={22} color={colors.primary} />
               </View>
-              <Text style={[styles.quickActionLabel, { color: colors.foreground }]}>{action.label}</Text>
+              <Text
+                style={[
+                  styles.quickActionLabel,
+                  { color: colors.foreground },
+                ]}
+              >
+                {action.label}
+              </Text>
             </Pressable>
           ))}
         </View>
@@ -182,10 +473,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { flexGrow: 1 },
-  headerGradient: {
-    paddingHorizontal: 20,
-    paddingBottom: 32,
-  },
+  headerGradient: { paddingHorizontal: 20, paddingBottom: 32 },
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -212,12 +500,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   statsRow: { flexDirection: "row", gap: 10 },
-  statCard: {
-    flex: 1,
-    padding: 12,
-    alignItems: "center",
-    borderWidth: 1,
-  },
+  statCard: { flex: 1, padding: 12, alignItems: "center", borderWidth: 1 },
   statIconBadge: {
     width: 36,
     height: 36,
@@ -228,31 +511,125 @@ const styles = StyleSheet.create({
   },
   statValue: { fontSize: 20, fontFamily: "Inter_700Bold", letterSpacing: -0.5 },
   statLabel: { fontSize: 11, fontFamily: "Inter_400Regular", marginTop: 2 },
-  section: { padding: 20, paddingBottom: 0 },
-  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
-  sectionTitle: { fontSize: 17, fontFamily: "Inter_700Bold", marginBottom: 12 },
+  section: { paddingHorizontal: 20, paddingTop: 20 },
+  lastSection: { paddingBottom: 8 },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    fontSize: 17,
+    fontFamily: "Inter_700Bold",
+    marginBottom: 12,
+  },
   seeAll: { fontSize: 13, fontFamily: "Inter_500Medium" },
-  nextRouteCard: {
+
+  // Next departure card
+  nextCard: {
     flexDirection: "row",
     alignItems: "center",
     padding: 16,
+    gap: 14,
+    borderWidth: 1.5,
+  },
+  countdownRing: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 2.5,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  countdownSeconds: {
+    fontSize: 13,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: -0.5,
+  },
+  countdownHours: {
+    fontSize: 15,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: -0.5,
+    lineHeight: 18,
+  },
+  countdownUnit: {
+    fontSize: 10,
+    fontFamily: "Inter_500Medium",
+    lineHeight: 13,
+  },
+  nextCardInfo: { flex: 1 },
+  nextCardName: {
+    fontSize: 14,
+    fontFamily: "Inter_600SemiBold",
+    marginBottom: 2,
+  },
+  nextCardRoute: { fontSize: 12, fontFamily: "Inter_400Regular", marginBottom: 4 },
+  nextCardMeta: { flexDirection: "row", alignItems: "center", gap: 4 },
+  nextCardTime: { fontSize: 12, fontFamily: "Inter_600SemiBold" },
+  nextCardRight: { alignItems: "flex-end", gap: 8 },
+  nextCardArrow: { marginTop: 4 },
+  statusBadge: { paddingHorizontal: 8, paddingVertical: 3 },
+  statusText: { fontSize: 11, fontFamily: "Inter_600SemiBold" },
+
+  // Upcoming list
+  upcomingList: { gap: 8 },
+  upcomingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     gap: 12,
     borderWidth: 1,
   },
-  routeBadge: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
-  routeInfo: { flex: 1 },
-  routeName: { fontSize: 14, fontFamily: "Inter_600SemiBold", marginBottom: 2 },
-  routeDetail: { fontSize: 12, fontFamily: "Inter_400Regular", marginBottom: 2 },
-  routeTime: { fontSize: 13, fontFamily: "Inter_600SemiBold" },
-  onTimeBadge: { paddingHorizontal: 8, paddingVertical: 4 },
-  onTimeText: { fontSize: 11, fontFamily: "Inter_600SemiBold" },
+  upcomingDot: { width: 8, height: 8, borderRadius: 4, flexShrink: 0 },
+  upcomingInfo: { flex: 1 },
+  upcomingName: { fontSize: 13, fontFamily: "Inter_600SemiBold", marginBottom: 2 },
+  upcomingRoute: { fontSize: 11, fontFamily: "Inter_400Regular" },
+  upcomingRight: { alignItems: "flex-end", gap: 2 },
+  upcomingCountdown: {
+    fontSize: 13,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: -0.3,
+  },
+  upcomingTime: { fontSize: 11, fontFamily: "Inter_400Regular" },
+
+  // Alerts
   alertCard: { padding: 14, marginBottom: 10, borderWidth: 1 },
-  alertTypeBadge: { alignSelf: "flex-start", paddingHorizontal: 8, paddingVertical: 3, marginBottom: 8 },
-  alertTypeBadgeText: { fontSize: 11, fontFamily: "Inter_600SemiBold", textTransform: "uppercase", letterSpacing: 0.5 },
+  alertTypeBadge: {
+    alignSelf: "flex-start",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    marginBottom: 8,
+  },
+  alertTypeBadgeText: {
+    fontSize: 11,
+    fontFamily: "Inter_600SemiBold",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
   alertTitle: { fontSize: 14, fontFamily: "Inter_600SemiBold", marginBottom: 4 },
   alertMessage: { fontSize: 13, fontFamily: "Inter_400Regular", lineHeight: 18 },
+
+  // Quick actions
   quickActions: { flexDirection: "row", gap: 12 },
-  quickAction: { flex: 1, padding: 14, alignItems: "center", gap: 8, borderWidth: 1 },
-  quickActionIcon: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
-  quickActionLabel: { fontSize: 12, fontFamily: "Inter_500Medium", textAlign: "center" },
+  quickAction: {
+    flex: 1,
+    padding: 14,
+    alignItems: "center",
+    gap: 8,
+    borderWidth: 1,
+  },
+  quickActionIcon: {
+    width: 44,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  quickActionLabel: {
+    fontSize: 12,
+    fontFamily: "Inter_500Medium",
+    textAlign: "center",
+  },
 });
