@@ -34,7 +34,6 @@ export interface FareRule {
   fromZone: string;
   toZone: string;
   price: number;
-  studentPrice: number;
 }
 
 export const sampleRoutes: Route[] = [
@@ -197,8 +196,8 @@ export const sampleAlerts: Alert[] = [
   },
   {
     id: "a4",
-    title: "Student Card Renewals",
-    message: "Student concession cards expire at end of June. Renew at any major terminal or via the university transport office.",
+    title: "New Weekend Routes Added",
+    message: "Weekend services on Route 7 Sandton Loop and Route 12 Soweto Express are now running from 08:00 to 20:00. Check the routes tab for full schedules.",
     type: "info",
     createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
     isActive: true,
@@ -206,16 +205,16 @@ export const sampleAlerts: Alert[] = [
 ];
 
 export const sampleFareRules: FareRule[] = [
-  { id: "f1", fromZone: "A", toZone: "A", price: 15.00, studentPrice: 7.50 },
-  { id: "f2", fromZone: "A", toZone: "B", price: 23.00, studentPrice: 11.50 },
-  { id: "f3", fromZone: "A", toZone: "C", price: 32.00, studentPrice: 16.00 },
-  { id: "f4", fromZone: "A", toZone: "D", price: 45.00, studentPrice: 22.50 },
-  { id: "f5", fromZone: "B", toZone: "B", price: 15.00, studentPrice: 7.50 },
-  { id: "f6", fromZone: "B", toZone: "C", price: 23.00, studentPrice: 11.50 },
-  { id: "f7", fromZone: "B", toZone: "D", price: 35.00, studentPrice: 17.50 },
-  { id: "f8", fromZone: "C", toZone: "C", price: 15.00, studentPrice: 7.50 },
-  { id: "f9", fromZone: "C", toZone: "D", price: 25.00, studentPrice: 12.50 },
-  { id: "f10", fromZone: "D", toZone: "D", price: 15.00, studentPrice: 7.50 },
+  { id: "f1", fromZone: "A", toZone: "A", price: 15.00 },
+  { id: "f2", fromZone: "A", toZone: "B", price: 23.00 },
+  { id: "f3", fromZone: "A", toZone: "C", price: 32.00 },
+  { id: "f4", fromZone: "A", toZone: "D", price: 45.00 },
+  { id: "f5", fromZone: "B", toZone: "B", price: 15.00 },
+  { id: "f6", fromZone: "B", toZone: "C", price: 23.00 },
+  { id: "f7", fromZone: "B", toZone: "D", price: 35.00 },
+  { id: "f8", fromZone: "C", toZone: "C", price: 15.00 },
+  { id: "f9", fromZone: "C", toZone: "D", price: 25.00 },
+  { id: "f10", fromZone: "D", toZone: "D", price: 15.00 },
 ];
 
 export const zones = ["A", "B", "C", "D"];

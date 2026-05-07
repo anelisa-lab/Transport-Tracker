@@ -33,7 +33,9 @@ function ZonePicker({
   const colors = useColors();
   return (
     <View style={styles.pickerGroup}>
-      <Text style={[styles.pickerLabel, { color: colors.mutedForeground }]}>{label}</Text>
+      <Text style={[styles.pickerLabel, { color: colors.mutedForeground }]}>
+        {label}
+      </Text>
       <View style={styles.zoneGrid}>
         {zones.map((zone) => (
           <Pressable
@@ -42,8 +44,10 @@ function ZonePicker({
               styles.zoneBtn,
               {
                 borderRadius: colors.radius - 4,
-                backgroundColor: selected === zone ? colors.primary : colors.card,
-                borderColor: selected === zone ? colors.primary : colors.border,
+                backgroundColor:
+                  selected === zone ? colors.primary : colors.card,
+                borderColor:
+                  selected === zone ? colors.primary : colors.border,
                 opacity: pressed ? 0.8 : 1,
               },
             ]}
@@ -52,11 +56,33 @@ function ZonePicker({
               onSelect(zone);
             }}
           >
-            <Text style={[styles.zoneBtnLetter, { color: selected === zone ? "#FFFFFF" : colors.foreground }]}>
+            <Text
+              style={[
+                styles.zoneBtnLetter,
+                { color: selected === zone ? "#FFFFFF" : colors.foreground },
+              ]}
+            >
               {zone}
             </Text>
-            <Text style={[styles.zoneBtnLabel, { color: selected === zone ? "rgba(255,255,255,0.8)" : colors.mutedForeground }]} numberOfLines={1}>
-              {zone === "A" ? "City" : zone === "B" ? "Suburbs" : zone === "C" ? "Outer" : "Rural"}
+            <Text
+              style={[
+                styles.zoneBtnLabel,
+                {
+                  color:
+                    selected === zone
+                      ? "rgba(255,255,255,0.8)"
+                      : colors.mutedForeground,
+                },
+              ]}
+              numberOfLines={1}
+            >
+              {zone === "A"
+                ? "City"
+                : zone === "B"
+                  ? "Suburbs"
+                  : zone === "C"
+                    ? "Outer"
+                    : "Rural"}
             </Text>
           </Pressable>
         ))}
@@ -70,7 +96,6 @@ export default function FareScreen() {
   const insets = useSafeAreaInsets();
   const [fromZone, setFromZone] = useState<string | null>(null);
   const [toZone, setToZone] = useState<string | null>(null);
-  const [isStudent, setIsStudent] = useState(true);
   const [result, setResult] = useState<FareRule | null | "not-found">(null);
   const [scaleAnim] = useState(new Animated.Value(1));
 
@@ -81,43 +106,80 @@ export default function FareScreen() {
     const fare = getFare(fromZone, toZone, sampleFareRules);
     setResult(fare ?? "not-found");
     Animated.sequence([
-      Animated.timing(scaleAnim, { toValue: 1.05, duration: 150, useNativeDriver: true }),
-      Animated.timing(scaleAnim, { toValue: 1, duration: 150, useNativeDriver: true }),
+      Animated.timing(scaleAnim, {
+        toValue: 1.05,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true,
+      }),
     ]).start();
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
   const canCalculate = fromZone && toZone;
 
-  const displayFare =
-    result && result !== "not-found"
-      ? isStudent
-        ? result.studentPrice
-        : result.price
-      : null;
-
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { paddingTop: topPad + 12, backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-        <Text style={[styles.title, { color: colors.foreground }]}>Fare Calculator</Text>
+      <View
+        style={[
+          styles.header,
+          {
+            paddingTop: topPad + 12,
+            backgroundColor: colors.card,
+            borderBottomColor: colors.border,
+          },
+        ]}
+      >
+        <Text style={[styles.title, { color: colors.foreground }]}>
+          Fare Calculator
+        </Text>
         <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
           Select your origin and destination zones
         </Text>
       </View>
 
       <ScrollView
-        contentContainerStyle={[styles.content, { paddingBottom: Platform.OS === "web" ? 34 : 24 }]}
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: Platform.OS === "web" ? 34 : 24 },
+        ]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={[styles.card, { backgroundColor: colors.card, borderRadius: colors.radius, borderColor: colors.border }]}>
-          <ZonePicker label="From Zone" selected={fromZone} onSelect={setFromZone} />
+        {/* Zone selectors */}
+        <View
+          style={[
+            styles.card,
+            {
+              backgroundColor: colors.card,
+              borderRadius: colors.radius,
+              borderColor: colors.border,
+            },
+          ]}
+        >
+          <ZonePicker
+            label="From Zone"
+            selected={fromZone}
+            onSelect={(z) => {
+              setFromZone(z);
+              setResult(null);
+            }}
+          />
 
-          <View style={[styles.swapRow]}>
+          <View style={styles.swapRow}>
             <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
             <Pressable
               style={({ pressed }) => [
                 styles.swapBtn,
-                { backgroundColor: colors.muted, borderRadius: 20, borderColor: colors.border, opacity: pressed ? 0.7 : 1 },
+                {
+                  backgroundColor: colors.muted,
+                  borderRadius: 20,
+                  borderColor: colors.border,
+                  opacity: pressed ? 0.7 : 1,
+                },
               ]}
               onPress={() => {
                 const tmp = fromZone;
@@ -132,38 +194,17 @@ export default function FareScreen() {
             <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
           </View>
 
-          <ZonePicker label="To Zone" selected={toZone} onSelect={setToZone} />
+          <ZonePicker
+            label="To Zone"
+            selected={toZone}
+            onSelect={(z) => {
+              setToZone(z);
+              setResult(null);
+            }}
+          />
         </View>
 
-        <View style={[styles.card, { backgroundColor: colors.card, borderRadius: colors.radius, borderColor: colors.border }]}>
-          <Text style={[styles.fareTypeLabel, { color: colors.foreground }]}>Passenger Type</Text>
-          <View style={styles.typeToggle}>
-            {[
-              { label: "Student", value: true, icon: "school-outline" as const },
-              { label: "Adult", value: false, icon: "person-outline" as const },
-            ].map((opt) => (
-              <Pressable
-                key={opt.label}
-                style={({ pressed }) => [
-                  styles.typeOption,
-                  {
-                    borderRadius: colors.radius - 4,
-                    backgroundColor: isStudent === opt.value ? colors.primary : colors.muted,
-                    borderColor: isStudent === opt.value ? colors.primary : colors.border,
-                    opacity: pressed ? 0.8 : 1,
-                  },
-                ]}
-                onPress={() => { setIsStudent(opt.value); setResult(null); }}
-              >
-                <Ionicons name={opt.icon} size={18} color={isStudent === opt.value ? "#FFFFFF" : colors.mutedForeground} />
-                <Text style={[styles.typeOptionText, { color: isStudent === opt.value ? "#FFFFFF" : colors.mutedForeground }]}>
-                  {opt.label}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        </View>
-
+        {/* Calculate button */}
         <Pressable
           style={({ pressed }) => [
             styles.calculateBtn,
@@ -176,57 +217,144 @@ export default function FareScreen() {
           onPress={calculate}
           disabled={!canCalculate}
         >
-          <Ionicons name="calculator-outline" size={20} color={canCalculate ? "#FFFFFF" : colors.mutedForeground} />
-          <Text style={[styles.calculateBtnText, { color: canCalculate ? "#FFFFFF" : colors.mutedForeground }]}>
+          <Ionicons
+            name="calculator-outline"
+            size={20}
+            color={canCalculate ? "#FFFFFF" : colors.mutedForeground}
+          />
+          <Text
+            style={[
+              styles.calculateBtnText,
+              { color: canCalculate ? "#FFFFFF" : colors.mutedForeground },
+            ]}
+          >
             Calculate Fare
           </Text>
         </Pressable>
 
+        {/* Result */}
         {result !== null && (
-          <Animated.View style={[{ transform: [{ scale: scaleAnim }] }]}>
+          <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
             {result === "not-found" ? (
-              <View style={[styles.resultCard, { backgroundColor: colors.destructive + "10", borderRadius: colors.radius, borderColor: colors.destructive + "40" }]}>
-                <Ionicons name="alert-circle-outline" size={32} color={colors.destructive} />
-                <Text style={[styles.resultNotFound, { color: colors.destructive }]}>No fare found for this route</Text>
+              <View
+                style={[
+                  styles.resultCard,
+                  {
+                    backgroundColor: colors.destructive + "10",
+                    borderRadius: colors.radius,
+                    borderColor: colors.destructive + "40",
+                  },
+                ]}
+              >
+                <Ionicons
+                  name="alert-circle-outline"
+                  size={32}
+                  color={colors.destructive}
+                />
+                <Text
+                  style={[styles.resultNotFound, { color: colors.destructive }]}
+                >
+                  No fare found for this route
+                </Text>
               </View>
             ) : (
-              <View style={[styles.resultCard, { backgroundColor: colors.primary + "08", borderRadius: colors.radius, borderColor: colors.primary + "30" }]}>
+              <View
+                style={[
+                  styles.resultCard,
+                  {
+                    backgroundColor: colors.primary + "08",
+                    borderRadius: colors.radius,
+                    borderColor: colors.primary + "30",
+                  },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.fareIconBadge,
+                    { backgroundColor: colors.primary + "15", borderRadius: 24 },
+                  ]}
+                >
+                  <Ionicons name="card" size={28} color={colors.primary} />
+                </View>
                 <Text style={[styles.resultLabel, { color: colors.mutedForeground }]}>
-                  {isStudent ? "Student" : "Adult"} Fare
+                  Fare
                 </Text>
                 <Text style={[styles.resultFare, { color: colors.primary }]}>
-                  R{displayFare?.toFixed(2)}
+                  R{result.price.toFixed(2)}
                 </Text>
                 <Text style={[styles.resultRoute, { color: colors.mutedForeground }]}>
                   {zoneLabels[fromZone!]} → {zoneLabels[toZone!]}
                 </Text>
-                {isStudent && (
-                  <View style={[styles.savingsBadge, { backgroundColor: colors.accent + "20", borderRadius: 8 }]}>
-                    <Ionicons name="school-outline" size={14} color={colors.accent} />
-                    <Text style={[styles.savingsText, { color: colors.accent }]}>
-                      You save R{(result.price - result.studentPrice).toFixed(2)} with student concession
-                    </Text>
-                  </View>
-                )}
               </View>
             )}
           </Animated.View>
         )}
 
-        <View style={[styles.fareTable, { backgroundColor: colors.card, borderRadius: colors.radius, borderColor: colors.border }]}>
-          <Text style={[styles.fareTableTitle, { color: colors.foreground }]}>Fare Guide</Text>
-          <View style={[styles.fareTableHeader, { borderBottomColor: colors.border }]}>
-            <Text style={[styles.fareTableHeaderText, { color: colors.mutedForeground, flex: 2 }]}>Route</Text>
-            <Text style={[styles.fareTableHeaderText, { color: colors.mutedForeground }]}>Adult</Text>
-            <Text style={[styles.fareTableHeaderText, { color: colors.mutedForeground }]}>Student</Text>
+        {/* Fare guide table */}
+        <View
+          style={[
+            styles.fareTable,
+            {
+              backgroundColor: colors.card,
+              borderRadius: colors.radius,
+              borderColor: colors.border,
+            },
+          ]}
+        >
+          <View style={styles.fareTableTitleRow}>
+            <Ionicons
+              name="list-outline"
+              size={16}
+              color={colors.mutedForeground}
+            />
+            <Text style={[styles.fareTableTitle, { color: colors.foreground }]}>
+              Fare Guide
+            </Text>
+          </View>
+          <View
+            style={[
+              styles.fareTableHeader,
+              { borderBottomColor: colors.border },
+            ]}
+          >
+            <Text
+              style={[
+                styles.fareTableHeaderText,
+                { color: colors.mutedForeground, flex: 2 },
+              ]}
+            >
+              Route
+            </Text>
+            <Text
+              style={[
+                styles.fareTableHeaderText,
+                { color: colors.mutedForeground },
+              ]}
+            >
+              Fare
+            </Text>
           </View>
           {sampleFareRules.map((rule) => (
-            <View key={rule.id} style={[styles.fareTableRow, { borderBottomColor: colors.border }]}>
-              <Text style={[styles.fareTableCell, { color: colors.foreground, flex: 2 }]}>
+            <View
+              key={rule.id}
+              style={[
+                styles.fareTableRow,
+                { borderBottomColor: colors.border },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.fareTableCell,
+                  { color: colors.foreground, flex: 2 },
+                ]}
+              >
                 Zone {rule.fromZone} → Zone {rule.toZone}
               </Text>
-              <Text style={[styles.fareTableCell, { color: colors.foreground }]}>R{rule.price.toFixed(2)}</Text>
-              <Text style={[styles.fareTableCell, { color: colors.accent }]}>R{rule.studentPrice.toFixed(2)}</Text>
+              <Text
+                style={[styles.fareTableCell, { color: colors.primary }]}
+              >
+                R{rule.price.toFixed(2)}
+              </Text>
             </View>
           ))}
         </View>
@@ -242,7 +370,12 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     borderBottomWidth: 1,
   },
-  title: { fontSize: 24, fontFamily: "Inter_700Bold", letterSpacing: -0.5, marginBottom: 4 },
+  title: {
+    fontSize: 24,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: -0.5,
+    marginBottom: 4,
+  },
   subtitle: { fontSize: 14, fontFamily: "Inter_400Regular" },
   content: { padding: 16, gap: 14 },
   card: { padding: 16, borderWidth: 1 },
@@ -264,21 +397,20 @@ const styles = StyleSheet.create({
   },
   zoneBtnLetter: { fontSize: 20, fontFamily: "Inter_700Bold" },
   zoneBtnLabel: { fontSize: 10, fontFamily: "Inter_400Regular" },
-  swapRow: { flexDirection: "row", alignItems: "center", marginVertical: 12, gap: 12 },
-  dividerLine: { flex: 1, height: 1 },
-  swapBtn: { width: 40, height: 40, alignItems: "center", justifyContent: "center", borderWidth: 1 },
-  fareTypeLabel: { fontSize: 15, fontFamily: "Inter_600SemiBold", marginBottom: 12 },
-  typeToggle: { flexDirection: "row", gap: 10 },
-  typeOption: {
-    flex: 1,
+  swapRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    paddingVertical: 12,
-    borderWidth: 1.5,
+    marginVertical: 12,
+    gap: 12,
   },
-  typeOptionText: { fontSize: 14, fontFamily: "Inter_600SemiBold" },
+  dividerLine: { flex: 1, height: 1 },
+  swapBtn: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+  },
   calculateBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -288,28 +420,51 @@ const styles = StyleSheet.create({
   },
   calculateBtnText: { fontSize: 16, fontFamily: "Inter_600SemiBold" },
   resultCard: {
-    padding: 20,
+    padding: 24,
     alignItems: "center",
     gap: 8,
     borderWidth: 1,
   },
+  fareIconBadge: {
+    width: 56,
+    height: 56,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 4,
+  },
   resultLabel: { fontSize: 13, fontFamily: "Inter_500Medium" },
-  resultFare: { fontSize: 48, fontFamily: "Inter_700Bold", letterSpacing: -1 },
+  resultFare: {
+    fontSize: 52,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: -1,
+  },
   resultRoute: { fontSize: 12, fontFamily: "Inter_400Regular" },
   resultNotFound: { fontSize: 16, fontFamily: "Inter_500Medium" },
-  savingsBadge: {
+  fareTable: { padding: 16, borderWidth: 1 },
+  fareTableTitleRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    marginTop: 4,
+    gap: 8,
+    marginBottom: 12,
   },
-  savingsText: { fontSize: 12, fontFamily: "Inter_500Medium" },
-  fareTable: { padding: 16, borderWidth: 1 },
-  fareTableTitle: { fontSize: 15, fontFamily: "Inter_600SemiBold", marginBottom: 12 },
-  fareTableHeader: { flexDirection: "row", paddingBottom: 8, marginBottom: 4, borderBottomWidth: 1 },
-  fareTableHeaderText: { flex: 1, fontSize: 11, fontFamily: "Inter_600SemiBold", textTransform: "uppercase", letterSpacing: 0.3 },
-  fareTableRow: { flexDirection: "row", paddingVertical: 8, borderBottomWidth: 1 },
+  fareTableTitle: { fontSize: 15, fontFamily: "Inter_600SemiBold" },
+  fareTableHeader: {
+    flexDirection: "row",
+    paddingBottom: 8,
+    marginBottom: 4,
+    borderBottomWidth: 1,
+  },
+  fareTableHeaderText: {
+    flex: 1,
+    fontSize: 11,
+    fontFamily: "Inter_600SemiBold",
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+  },
+  fareTableRow: {
+    flexDirection: "row",
+    paddingVertical: 9,
+    borderBottomWidth: 1,
+  },
   fareTableCell: { flex: 1, fontSize: 13, fontFamily: "Inter_400Regular" },
 });
