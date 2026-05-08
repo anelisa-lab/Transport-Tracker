@@ -13,10 +13,11 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AuthContext";
+import { useFavourites } from "@/context/FavouritesContext";
 import { useColors } from "@/hooks/useColors";
 import { useCountdown, useNextRoute } from "@/hooks/useCountdown";
 import { useVehicleSimulation, VehicleState } from "@/hooks/useVehicleSimulation";
-import { Route, sampleAlerts, sampleRoutes } from "@/lib/sampleData";
+import { Route, sampleAlerts, sampleRoutes, sampleStops } from "@/lib/sampleData";
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -318,6 +319,10 @@ export default function HomeScreen() {
   const activeAlerts = sampleAlerts.filter((a) => a.isActive);
   const nextRoute = useNextRoute(sampleRoutes);
   const vehicles = useVehicleSimulation(sampleRoutes);
+  const { favRoutes, favStops } = useFavourites();
+  const favRouteObjs = sampleRoutes.filter((r) => favRoutes.includes(r.id));
+  const favStopObjs = sampleStops.filter((s) => favStops.includes(s.id));
+  const hasFavourites = favRouteObjs.length > 0 || favStopObjs.length > 0;
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
 
@@ -395,6 +400,85 @@ export default function HomeScreen() {
             Next Departure
           </Text>
           <NextDepartureCard route={nextRoute} />
+        </View>
+      )}
+
+      {/* Favourites */}
+      {hasFavourites && (
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+              Favourites
+            </Text>
+            <Pressable onPress={() => router.push("/(tabs)/profile")}>
+              <Text style={[styles.seeAll, { color: colors.primary }]}>
+                Manage
+              </Text>
+            </Pressable>
+          </View>
+          <View style={styles.upcomingList}>
+            {favRouteObjs.map((r) => (
+              <Pressable
+                key={r.id}
+                style={({ pressed }) => [
+                  styles.favHomeRow,
+                  {
+                    backgroundColor: colors.card,
+                    borderRadius: colors.radius - 2,
+                    borderColor: r.color + "50",
+                    opacity: pressed ? 0.9 : 1,
+                  },
+                ]}
+                onPress={() => router.push(`/route/${r.id}`)}
+              >
+                <View style={[styles.favHomeDot, { backgroundColor: r.color }]}>
+                  <Ionicons name="bus" size={12} color="#FFF" />
+                </View>
+                <View style={styles.favHomeInfo}>
+                  <Text style={[styles.favHomeName, { color: colors.foreground }]} numberOfLines={1}>
+                    {r.name.split("—")[1]?.trim() ?? r.name}
+                  </Text>
+                  <Text style={[styles.favHomeSub, { color: colors.mutedForeground }]}>
+                    {r.from} → {r.to}
+                  </Text>
+                </View>
+                <View style={styles.favHomeRight}>
+                  <Text style={[styles.favHomeTime, { color: colors.foreground }]}>
+                    {r.departureTime}
+                  </Text>
+                  <Text style={[styles.favHomeFare, { color: r.color }]}>
+                    R{r.fare.toFixed(2)}
+                  </Text>
+                </View>
+              </Pressable>
+            ))}
+            {favStopObjs.map((s) => (
+              <Pressable
+                key={s.id}
+                style={({ pressed }) => [
+                  styles.favHomeRow,
+                  {
+                    backgroundColor: colors.card,
+                    borderRadius: colors.radius - 2,
+                    borderColor: colors.border,
+                    opacity: pressed ? 0.9 : 1,
+                  },
+                ]}
+                onPress={() => router.push("/(tabs)/stops")}
+              >
+                <View style={[styles.favHomeDot, { backgroundColor: colors.primary + "20" }]}>
+                  <Ionicons name="location" size={12} color={colors.primary} />
+                </View>
+                <View style={styles.favHomeInfo}>
+                  <Text style={[styles.favHomeName, { color: colors.foreground }]}>{s.name}</Text>
+                  <Text style={[styles.favHomeSub, { color: colors.mutedForeground }]}>
+                    Zone {s.zone} · {s.routes.length} routes
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={16} color={colors.mutedForeground} />
+              </Pressable>
+            ))}
+          </View>
         </View>
       )}
 
@@ -660,6 +744,30 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   upcomingTime: { fontSize: 11, fontFamily: "Inter_400Regular" },
+
+  // Favourites on home
+  favHomeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    gap: 10,
+    borderWidth: 1.5,
+  },
+  favHomeDot: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  favHomeInfo: { flex: 1 },
+  favHomeName: { fontSize: 13, fontFamily: "Inter_600SemiBold", marginBottom: 2 },
+  favHomeSub: { fontSize: 11, fontFamily: "Inter_400Regular" },
+  favHomeRight: { alignItems: "flex-end", gap: 2 },
+  favHomeTime: { fontSize: 13, fontFamily: "Inter_700Bold" },
+  favHomeFare: { fontSize: 11, fontFamily: "Inter_600SemiBold" },
 
   // Live vehicles
   vehicleRow: {

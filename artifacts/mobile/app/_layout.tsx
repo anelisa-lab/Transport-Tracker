@@ -15,6 +15,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider } from "@/context/AuthContext";
+import { FavouritesProvider } from "@/context/FavouritesContext";
 import { useNotifications } from "@/hooks/useNotifications";
 import { sampleRoutes } from "@/lib/sampleData";
 
@@ -30,6 +31,10 @@ function RootLayoutNav() {
       <Stack.Screen name="login" options={{ headerShown: false, animation: "fade" }} />
       <Stack.Screen name="register" options={{ headerShown: false, animation: "slide_from_right" }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="route/[id]"
+        options={{ headerShown: false, animation: "slide_from_right" }}
+      />
     </Stack>
   );
 }
@@ -57,7 +62,9 @@ export default function RootLayout() {
           <GestureHandlerRootView style={{ flex: 1 }}>
             <KeyboardProvider>
               <AuthProvider>
-                <RootLayoutNav />
+                <FavouritesProvider>
+                  <RootLayoutNav />
+                </FavouritesProvider>
               </AuthProvider>
             </KeyboardProvider>
           </GestureHandlerRootView>

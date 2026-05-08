@@ -29,6 +29,7 @@ interface AuthContextValue {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string) => Promise<void>;
   signOut: () => Promise<void>;
+  updateDisplayName: (name: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -101,8 +102,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const updateDisplayName = useCallback(
+    async (name: string) => {
+      if (isFirebaseConfigured && firebaseAuth && firebaseAuth.currentUser) {
+        await updateProfile(firebaseAuth.currentUser, { displayName: name });
+        setUser((prev) => (prev ? { ...prev, displayName: name } : prev));
+      } else if (user) {
+        const updated = { ...user, displayName: name };
+        await AsyncStorage.setItem(DEMO_USER_KEY, JSON.stringify(updated));
+        setUser(updated as DemoUser);
+      }
+    },
+    [user]
+  );
+
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider
+      value={{ user, loading, signIn, signUp, signOut, updateDisplayName }}
+    >
       {children}
     </AuthContext.Provider>
   );

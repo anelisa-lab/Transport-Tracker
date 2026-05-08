@@ -12,6 +12,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import StopsMap from "@/components/StopsMap";
+import { useFavourites } from "@/context/FavouritesContext";
 import { useColors } from "@/hooks/useColors";
 import { Stop, sampleRoutes, sampleStops } from "@/lib/sampleData";
 
@@ -59,7 +60,15 @@ function FacilityChip({ label }: { label: string }) {
   );
 }
 
-function StopCard({ stop }: { stop: Stop }) {
+function StopCard({
+  stop,
+  isFav,
+  onToggleFav,
+}: {
+  stop: Stop;
+  isFav: boolean;
+  onToggleFav: () => void;
+}) {
   const colors = useColors();
   return (
     <View
@@ -81,6 +90,13 @@ function StopCard({ stop }: { stop: Stop }) {
           </Text>
         </View>
         <ZoneBadge zone={stop.zone} />
+        <Pressable onPress={onToggleFav} hitSlop={8} style={styles.favBtn}>
+          <Ionicons
+            name={isFav ? "heart" : "heart-outline"}
+            size={20}
+            color={isFav ? "#EF4444" : colors.mutedForeground}
+          />
+        </Pressable>
       </View>
 
       <View style={[styles.routesList, { borderTopColor: colors.border }]}>
@@ -112,6 +128,7 @@ function StopCard({ stop }: { stop: Stop }) {
 export default function StopsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { favStops, toggleFavStop } = useFavourites();
   const [search, setSearch] = useState("");
   const [selectedZone, setSelectedZone] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
@@ -243,7 +260,13 @@ export default function StopsScreen() {
         <FlatList
           data={filtered}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <StopCard stop={item} />}
+          renderItem={({ item }) => (
+            <StopCard
+              stop={item}
+              isFav={favStops.includes(item.id)}
+              onToggleFav={() => toggleFavStop(item.id)}
+            />
+          )}
           contentContainerStyle={[
             styles.list,
             { paddingBottom: Platform.OS === "web" ? 34 : 24 },
@@ -326,6 +349,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   facilityText: { fontSize: 11, fontFamily: "Inter_400Regular" },
+  favBtn: { padding: 2, marginLeft: 4 },
   empty: { alignItems: "center", paddingTop: 60, gap: 12 },
   emptyText: { fontSize: 16, fontFamily: "Inter_400Regular" },
 });
